@@ -17,6 +17,12 @@
 
 package process_state
 
+import (
+	"errors"
+
+	"github.com/joeshaw/multierror"
+)
+
 type procMatcher struct {
 	Name  string `config:"name"`
 	Args  string `config:"args"`
@@ -25,5 +31,23 @@ type procMatcher struct {
 
 // Config stores the system/process config options
 type Config struct {
-	Procs []procMatcher `config:"process_state.processes"`
+	Procs []*procMatcher `config:"process_state.processes"`
+}
+
+// Validate validates the process_state config.
+func (c *Config) Validate() error {
+	var errs multierror.Errors
+
+	for _, procMatcher := range c.Procs {
+		if procMatcher.Name == "" {
+			errs = append(errs, errors.New("Name in process_state.processes cannot be empty"))
+		}
+		if procMatcher.Alias == "" {
+			errs = append(errs, errors.New("Alias in process_state.processes cannot be empty"))
+		}
+		if procMatcher.Args == "" {
+			procMatcher.Args = ".*"
+		}
+	}
+	return errs.Err()
 }

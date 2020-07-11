@@ -46,7 +46,7 @@ func init() {
 type MetricSet struct {
 	mb.BaseMetricSet
 	stats *process.Stats
-	procs []procMatcher
+	procs []*procMatcher
 }
 
 // New create a new instance of the MetricSet
