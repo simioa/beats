@@ -1,0 +1,27 @@
+- name: process_state
+  type: group
+  description: >
+    `process_state` contains metrics for the checked processes running on the host.
+  release: ga
+  fields:
+    - name: process
+      type: group
+      description: >
+        Process Metrics for the checked Process
+      fields:
+        - name: args
+          type: keyword
+          description: >
+            Args Regex that should match the checked Process
+        - name: alias
+          type: keyword
+          description: >
+            Alias for the checked Process
+        - name: name
+          type: keyword
+          description: >
+            Process Name Regex that should match the checked Process
+    - name: running
+      type: boolean
+      description: >
+        Boolean indicating if the checked Process is running

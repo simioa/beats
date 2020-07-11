@@ -1,0 +1,28 @@
+{
+    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "agent": {
+        "hostname": "host.example.com",
+        "name": "host.example.com"
+    },
+    "event": {
+        "dataset": "system.process_state",
+        "duration": 115000,
+        "module": "system"
+    },
+    "metricset": {
+        "name": "process_state"
+    },
+    "service": {
+        "type": "system"
+    },
+    "system": {
+        "process_state": {
+            "process": {
+                "args": ".*",
+                "alias": "metricbeat",
+                "name": "metricbeat"
+            },
+            "running": true
+        }
+    }
+}
