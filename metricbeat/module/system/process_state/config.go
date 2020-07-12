@@ -24,9 +24,8 @@ import (
 )
 
 type procMatcher struct {
-	Name  string `config:"name"`
-	Args  string `config:"args"`
-	Alias string `config:"alias"`
+	Process string `config:"process"`
+	Alias   string `config:"alias"`
 }
 
 // Config stores the system/process config options
@@ -39,14 +38,11 @@ func (c *Config) Validate() error {
 	var errs multierror.Errors
 
 	for _, procMatcher := range c.Procs {
-		if procMatcher.Name == "" {
-			errs = append(errs, errors.New("Name in process_state.processes cannot be empty"))
+		if procMatcher.Process == "" {
+			errs = append(errs, errors.New("Process in process_state.processes cannot be empty"))
 		}
 		if procMatcher.Alias == "" {
 			errs = append(errs, errors.New("Alias in process_state.processes cannot be empty"))
-		}
-		if procMatcher.Args == "" {
-			procMatcher.Args = ".*"
 		}
 	}
 	return errs.Err()

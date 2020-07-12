@@ -39,6 +39,12 @@ func init() {
 	)
 }
 
+type processState struct {
+	cmdline string
+	name    string
+	running bool
+}
+
 // MetricSet type defines all fields of the MetricSet
 // As a minimum it must inherit the mb.BaseMetricSet fields, but can be extended with
 // additional entries. These variables can be used to persist data or configuration between
@@ -57,14 +63,10 @@ func New(base mb.BaseMetricSet) (mb.MetricSet, error) {
 	if err := base.Module().UnpackConfig(&config); err != nil {
 		return nil, err
 	}
-	var processList []string
-	for _, process := range config.Procs {
-		processList = append(processList, process.Name)
-	}
 	m := &MetricSet{
 		BaseMetricSet: base,
 		stats: &process.Stats{
-			Procs: processList,
+			Procs: []string{".*"},
 			IncludeTop: process.IncludeTopConfig{
 				Enabled: false,
 			},
@@ -88,17 +90,20 @@ func (m *MetricSet) Fetch(r mb.ReporterV2) error {
 	}
 
 	for _, checkedProc := range m.procs {
-		running, err := getProcessState(procs, checkedProc.Name, checkedProc.Args)
+		procState, err := getProcessState(procs, checkedProc.Process)
 		if err != nil {
 			return errors.Wrap(err, "process state")
 		}
 		event := common.MapStr{
-			"process": common.MapStr{
-				"name":  checkedProc.Name,
-				"args":  checkedProc.Args,
-				"alias": checkedProc.Alias,
-			},
-			"running": running,
+			"procString": checkedProc.Process,
+			"alias":      checkedProc.Alias,
+			"running":    procState.running,
+		}
+		if procState.running {
+			event.Put("process", common.MapStr{
+				"name":         procState.name,
+				"command_line": procState.cmdline,
+			})
 		}
 		r.Event(mb.Event{
 			MetricSetFields: event,
@@ -108,22 +113,21 @@ func (m *MetricSet) Fetch(r mb.ReporterV2) error {
 	return nil
 }
 
-func getProcessState(runningProcesses []common.MapStr, processName string, processArgs string) (bool, error) {
-	running := false
-	namePattern, err := regexp.Compile(processName)
-	if err != nil {
-		return false, err
+func getProcessState(runningProcesses []common.MapStr, process string) (processState, error) {
+	procState := processState{
+		running: false,
 	}
-	argsPattern, err := regexp.Compile(processArgs)
+	processPattern, err := regexp.Compile(process)
 	if err != nil {
-		return false, err
+		return procState, err
 	}
 	for _, runningProcess := range runningProcesses {
-		if namePattern.MatchString(runningProcess["name"].(string)) {
-			if argsPattern.MatchString(runningProcess["cmdline"].(string)) {
-				running = true
-			}
+		if processPattern.MatchString(runningProcess["cmdline"].(string)) {
+			procState.cmdline = runningProcess["cmdline"].(string)
+			procState.name = runningProcess["name"].(string)
+			procState.running = true
+			return procState, nil
 		}
 	}
-	return running, nil
+	return procState, nil
 }

@@ -9,18 +9,23 @@
       description: >
         Process Metrics for the checked Process
       fields:
-        - name: args
-          type: keyword
-          description: >
-            Args Regex that should match the checked Process
-        - name: alias
-          type: keyword
-          description: >
-            Alias for the checked Process
         - name: name
           type: keyword
           description: >
-            Process Name Regex that should match the checked Process
+            The process name that matches the regex
+        - name: command_line
+          type: keyword
+          description: >
+            The full command-line of the process that matches the regex
+          ignore_above: 2048
+    - name: procString
+      type: keyword
+      description: >
+        The regex provided to search for
+    - name: alias
+      type: keyword
+      description: >
+        The Alias to easily identify the checked Process
     - name: running
       type: boolean
       description: >

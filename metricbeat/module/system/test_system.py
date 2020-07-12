@@ -429,6 +429,48 @@ class Test(metricbeat.BaseTest):
             self.assertTrue(found_env, "env not found in any process events")
 
     @unittest.skipUnless(re.match("(?i)win|linux|darwin|freebsd", sys.platform), "os")
+    def test_process_state(self):
+        """
+        Test system/process_state output.
+        """
+        self.render_config_template(modules=[{
+            "name": "system",
+            "metricsets": ["process_state"],
+            "period": "5s",
+            "extras": {
+                "process_state.processes": [
+                    {
+                        "process": "(?i)metricbeat.test(.exe)?",
+                        "alias": "metricbeat",
+                    }
+                ],
+            }
+        }])
+        proc = self.start_beat()
+        self.wait_until(lambda: self.output_lines() > 0)
+        proc.check_kill_and_wait()
+        self.assert_no_logged_warnings()
+
+        output = self.read_output_json()
+        self.assertGreater(len(output), 0)
+
+        for evt in output:
+            self.assert_fields_are_documented(evt)
+
+            process_state = evt["system"]["process_state"]
+            process_metrics = process_state["process"]
+            assert isinstance(process_state["alias"], str)
+            assert isinstance(process_state["procString"], str)
+            assert isinstance(process_state["running"], bool)
+            assert isinstance(process_metrics["name"], str)
+            assert isinstance(process_metrics["command_line"], str)
+
+            self.assertEqual(process_state["alias"], "metricbeat")
+            self.assertEqual(process_state["procString"], "(?i)metricbeat.test(.exe)?")
+            self.assertTrue(process_state["running"])
+            assert re.match("(?i)metricbeat.test(.exe)?", process_metrics["name"])
+
+    @unittest.skipUnless(re.match("(?i)win|linux|darwin|freebsd", sys.platform), "os")
     def test_process_metricbeat(self):
         """
         Checks that the per proc stats are found in the output and

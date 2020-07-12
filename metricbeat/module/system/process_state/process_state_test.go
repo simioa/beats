@@ -54,13 +54,14 @@ func TestFetch(t *testing.T) {
 	require.True(t, ok)
 
 	assert.Contains(t, event, "running")
+	assert.Contains(t, event, "alias")
+	assert.Contains(t, event, "procString")
 
 	eventProcess, ok := event["process"].(common.MapStr)
 	require.True(t, ok)
 
-	assert.Contains(t, eventProcess, "args")
-	assert.Contains(t, eventProcess, "alias")
 	assert.Contains(t, eventProcess, "name")
+	assert.Contains(t, eventProcess, "command_line")
 
 }
 
@@ -70,9 +71,8 @@ func getConfig() map[string]interface{} {
 		"metricsets": []string{"process_state"},
 		"process_state.processes": []procMatcher{
 			{
-				Alias: "metricbeat",
-				Name:  "metricbeat",
-				Args:  ".*",
+				Alias:   "any",
+				Process: ".*",
 			},
 		},
 	}

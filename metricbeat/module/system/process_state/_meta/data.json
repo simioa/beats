@@ -18,10 +18,11 @@
     "system": {
         "process_state": {
             "process": {
-                "args": ".*",
-                "alias": "metricbeat",
-                "name": "metricbeat"
+                "name": "metricbeat",
+                "command_line": "/usr/share/metricbeat/bin/metricbeat -c metricbeat.yml"
             },
+            "procString": ".*metricbeat.*",
+            "alias": "metricbeat",
             "running": true
         }
     }
