@@ -11,4 +11,28 @@ This metricset is available on:
 [float]
 === Configuration
 
-There are no configuration options for this metricset.
+*`processes`*:: When the `process_state` metricset is enabled, you can use the
+`processes` option to define a list of regexp expressions and aliases to define the processes that should be checked. For more complex filtering, you should use the
+`processors` configuration option. See <<filtering-and-enhancing-data>> for more
+information.
++
+The following example config returns the state of any metricbeat process:
++
+[source,yaml]
+----
+metricbeat.modules:
+- module: system
+  metricsets: ["process_state"]
+  processes:
+  - process: ".*metricbeat.*"
+    alias: "metricbeat"
+----
+
+Every process definition contains two required configuration parameters
+
+*`process`*::
+This parameter allows you to define a Regexp expression which must match the process that should be checked.
+If any process matches the given expression, the process will be reported as running.
+
+*`alias`*::
+You can define an alias for every check to easily identify the checked process
